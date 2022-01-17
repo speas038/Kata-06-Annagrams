@@ -12,61 +12,72 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
 
-        Long start = System.nanoTime();
-
+        Long programStart = System.nanoTime();
         Map<String, List<String>>dictionaryMap = buildDictionaryLookupTable();
+        Long timeToBuildDictionary = TimeUnit.NANOSECONDS.toMillis(System.nanoTime()-programStart);
 
-        System.out.println("Time to Build Dictionary: " + TimeUnit.NANOSECONDS.toMillis(System.nanoTime()-start));
-
+        Long sortStart = System.nanoTime();
         Map<String, List<String>> filteredMap = dictionaryMap.entrySet().stream().filter(x -> x.getValue().size() > 1)
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        Long timeToFilterList = TimeUnit.NANOSECONDS.toMillis(System.nanoTime()-sortStart);
 
-//        filteredMap.entrySet().stream().forEach(a -> System.out.println(a));
+        Long printStart = System.nanoTime();
+        filteredMap.entrySet().stream().forEach(a -> System.out.println(a));
+        Long timeToPrint = TimeUnit.NANOSECONDS.toMillis(System.nanoTime()-printStart);
 
-        System.out.println("Filtered entries: " + filteredMap.size());
+        Long runTime = TimeUnit.NANOSECONDS.toMillis(System.nanoTime()-programStart);
 
-        System.out.println("Total Time: " + TimeUnit.NANOSECONDS.toMillis(System.nanoTime()-start));
-
-//        System.out.println("Map:" + filteredMap);
+        System.out.println("Number of annagram Lists entries: " + filteredMap.size());
+        System.out.println("Time to build Dictornary: " + timeToBuildDictionary);
+        System.out.println("Time to build filtered list " + timeToFilterList);
+        System.out.println("Time to print " + timeToPrint);
+        System.out.println("Total Time: " + runTime);
 
     }
 
     private static Map<String, List<String>> buildDictionaryLookupTable() throws IOException {
 
 
-
         File file = new File("./resources/wordlist.txt");
         BufferedReader br = new BufferedReader(new FileReader(file));
-        Map<String, List<String>> dictionaryMap = new Hashtable<>();
-        String word;
-        String st;
+        Map<String, List<String>> dictionaryMap = new HashMap<>();
 
-        //Create hash map
-        while ((st = br.readLine()) != null)
+        String input;
+
+        //Build hash map
+        while ((input = br.readLine()) != null)
         {
-            word = st;
-            String key = getSortedString(word);
-
-            if(!dictionaryMap.containsKey(key))
-            {
-                List<String> newList = new ArrayList<>();
-                newList.add(word);
-                dictionaryMap.put(key, newList);
-            }
-
-            //If it doesn't contain the word, add it
-            if( !dictionaryMap.get(key).contains(word))
-            {
-                dictionaryMap.get(key).add(word);
-            }
-
-            //otherwise it was a duplicate, so carry on, no action
-
+            insertWord(dictionaryMap, input);
         }
+
         return dictionaryMap;
     }
 
-    private static String getSortedString(String st)
+    public static void insertWord(Map<String, List<String>> dictionaryMap, String input) {
+
+        String word;
+        String key;
+        word = input;
+        key = getSortedString(word);
+
+        if(!dictionaryMap.containsKey(key))
+        {
+            List<String> newList = new ArrayList<>();
+            newList.add(word);
+            dictionaryMap.put(key, newList);
+        }
+
+        //If it doesn't contain the word, add it
+        if( !dictionaryMap.get(key).contains(word))
+        {
+            dictionaryMap.get(key).add(word);
+        }
+
+        //otherwise it was a duplicate, so carry on, no action
+    }
+
+
+    public static String getSortedString(String st)
     {
         char[] ar = st.toCharArray();
         Arrays.sort(ar);
